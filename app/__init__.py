@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_restful import Api
-from logger import setup_logger  
+from app.services.logging_service import setup_logger
 
 logger = setup_logger()
 
@@ -10,7 +10,5 @@ def create_app():
     api = Api(app)
 
     logger.info("Aplicação Flask iniciada com Flask-RESTful")
-
-    
 
     return app
