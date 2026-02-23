@@ -2,7 +2,9 @@ Flask==3.1.2
 Flask-RESTful==0.3.10
 Flask-SQLAlchemy==3.1.1
 flask-marshmallow==1.4.0
-marshmallow==4.2.2
+marshmallow>=3.20.0,<4
+marshmallow-sqlalchemy==0.29.0
 python-dotenv==1.2.1
 logging==0.4.9.6
 pytest==9.0.2
+psycopg2-binary==2.9.10
