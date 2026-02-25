@@ -1,13 +1,19 @@
-from . import db
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Integer, Time
+from database import Base
+from datetime import time
+from typing import Optional, List
 
-class Galpao(db.Model):
+class Galpao(Base):
     __tablename__ = "galpao"
 
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(50), nullable=False)
-    capacidade = db.Column(db.Integer, nullable=False)
+    id_galpao: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    identificacao: Mapped[str] = mapped_column(String(50), nullable=False)
+    temperatura_galpao: Mapped[Optional[int]] = mapped_column(Integer)
 
-    aves = db.relationship("Ave", back_populates="galpao", cascade="all, delete-orphan")
+    # Configurações de iluminação
+    horario_religamento_luzes: Mapped[Optional[time]] = mapped_column(Time)
+    horario_desligamento_luzes: Mapped[Optional[time]] = mapped_column(Time)
 
-    def __repr__(self):
-        return f"<Galpao {self.nome} (Capacidade: {self.capacidade})>"
+    # Relacionamento: Um galpão conhece seus lotes
+    lotes: Mapped[List["Lote"]] = relationship("Lote", back_populates="galpao")
