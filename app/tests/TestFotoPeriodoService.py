@@ -7,3 +7,10 @@ class TestFotoPeriodoService:
         resultado = FotoPeriodoService.obter_configuracao_semanal(3)
         assert resultado["horario_religamento_luzes"] == "17:15"
         assert resultado["horario_desligamento_luzes"] == "06:15"
+        
+        
+    def test_luz_natural_desligamento(self):
+        # Semana 10: Desligamento é natural (None)
+        resultado = FotoPeriodoService.obter_configuracao_semanal(10)
+        assert resultado["horario_religamento_luzes"] == "17:15"
+        assert resultado["horario_desligamento_luzes"] is None
