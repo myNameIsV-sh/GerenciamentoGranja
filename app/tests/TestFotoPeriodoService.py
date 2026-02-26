@@ -14,3 +14,8 @@ class TestFotoPeriodoService:
         resultado = FotoPeriodoService.obter_configuracao_semanal(10)
         assert resultado["horario_religamento_luzes"] == "17:15"
         assert resultado["horario_desligamento_luzes"] is None
+        
+    def test_teto_de_semanas(self):
+        # Semana 50: Deve travar na semana 25
+        resultado = FotoPeriodoService.obter_configuracao_semanal(50)
+        assert resultado["semana_atual"] == 25
