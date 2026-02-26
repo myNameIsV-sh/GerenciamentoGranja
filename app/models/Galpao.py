@@ -9,7 +9,8 @@ class Galpao(Base):
 
     id_galpao: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     identificacao: Mapped[str] = mapped_column(String(50), nullable=False)
-    temperatura_galpao: Mapped[Optional[int]] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(20), default="Livre")
+    temperatura_atual: Mapped[Optional[int]] = mapped_column(Integer)
 
     # Configurações de iluminação
     horario_religamento_luzes: Mapped[Optional[time]] = mapped_column(Time)
