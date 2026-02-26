@@ -17,6 +17,16 @@ class LoteRepository:
             logger.error(f"Erro ao buscar lote {id_lote}: {str(e)}")
             return None
 
+    def listar_todos(self):
+        """Lista todos os lotes cadastrados."""
+        try:
+            lotes = db.session.query(Lote).all()
+            logger.debug(f"Listagem de lotes executada. Total: {len(lotes)}")
+            return lotes
+        except SQLAlchemyError as e:
+            logger.error(f"Erro ao listar lotes: {str(e)}")
+            return []
+
     def save(self, lote: Lote):
         """Salva o lote e registra o sucesso ou falha crítica."""
         try:
