@@ -16,9 +16,9 @@ def test_db_connection():
     try:
         with db.engine.connect() as conn:
             result = conn.execute(text("SELECT 1"))
-            print("Conexão OK")
+            logger.info("Conexão OK")
     except Exception as e:
-        print("Erro na conexão:", e)
+        logger.error("Erro na conexão:", e)
 
 def create_app():
     app = Flask(__name__)

@@ -15,6 +15,7 @@ class GalpaoService:
         galpao = self.obter_galpao_por_id(id_galpao)
 
         # Opcional: Validar se o status é permitido
+        # TODO: Transformar esses campos em números, ex.: 0, 1, 2
         status_permitidos = ["Livre", "Ocupado", "Em Manutenção"]
         if novo_status not in status_permitidos:
             raise ValueError(f"Status inválido. Escolha entre: {', '.join(status_permitidos)}")
