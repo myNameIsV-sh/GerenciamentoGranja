@@ -1,19 +1,34 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import select
-
+from app.database import db
 from app.models.Galpao import Galpao
+from sqlalchemy.exc import SQLAlchemyError
+from app.services.logging_service import setup_logger
+
+logger = setup_logger("GalpaoRepository")
 
 class GalpaoRepository:
     def get_by_id(self, id_galpao: int):
-        """Busca o galpão pelo ID."""
-        return db.session.get(Galpao, id_galpao)
+        try:
+            return db.session.get(Galpao, id_galpao)
+        except SQLAlchemyError as e:
+            logger.error(f"Erro ao buscar galpão {id_galpao}: {str(e)}")
+            return None
 
     def save(self, galpao: Galpao):
-        """Persiste as alterações (luzes, temperatura, status)."""
-        db.session.add(galpao)
-        db.session.commit()
-        return galpao
+        try:
+            db.session.add(galpao)
+            db.session.commit()
+            logger.info(f"Galpão {galpao.id_galpao} ({galpao.identificacao}) atualizado com sucesso.")
+            return galpao
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.critical(f"Erro fatal ao salvar galpão {galpao.id_galpao}: {str(e)}")
+            raise e
 
     def listar_todos(self):
-        """Útil para o dashboard mostrar todos os galpões."""
-        return db.session.query(Galpao).all()
+        try:
+            galpoes = db.session.query(Galpao).all()
+            logger.debug(f"Listagem de galpões executada. Total: {len(galpoes)}")
+            return galpoes
+        except SQLAlchemyError as e:
+            logger.error(f"Erro ao listar galpões: {str(e)}")
+            return []
