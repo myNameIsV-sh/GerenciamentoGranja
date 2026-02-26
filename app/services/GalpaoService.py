@@ -37,4 +37,3 @@ class GalpaoService:
             return {"status": "Alerta", "mensagem": "Temperatura crítica! Ligar exaustores."}
 
         return {"status": "Normal", "mensagem": "Temperatura dentro do padrão."}
-
