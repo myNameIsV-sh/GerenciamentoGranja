@@ -49,3 +49,15 @@ class TestLoteService:
         
         # Verifica retorno final
         assert resultado["analise_alimentacao"]["status"] == "Adequado"
+        
+        
+    def test_lote_inexistente(self, lote_service, dependencias):
+        # Se o repositório disparar um erro simulando que não encontrou o lote
+        dependencias["lote_repo"].get_lote.side_effect = Exception("Erro 404: Lote não encontrado")
+        
+        # Garantir que o serviço repassa a exceção corretamente e interrompe o fluxo
+        with pytest.raises(Exception, match="404: Lote não encontrado"):
+            lote_service.registrar_consumo_semanal(id_lote=999, racao_consumida_kg=50.0)
+        
+        # Garante que os outros serviços não foram chamados após o erro
+        dependencias["galpao_service"].atualizar_configuracao_luz.assert_not_called()
