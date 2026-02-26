@@ -35,35 +35,32 @@ class AlimentacaoService:
         return cls.CURVA_ALIMENTACAO[semana_ajustada]
 
     @classmethod
-    def analisar_consumo(cls, semana_atual: int, consumo_real_kg: float, margem_erro: float = 0.10) -> dict:
-        """
-        Compara o consumo real do lote com a tabela esperada.
-        margem_erro: 10% por padrão. Aceita oscilações normais sem gerar alarme falso.
-        """
+    def analisar_consumo(cls, semana_atual: int, consumo_real_kg: float, aves_vivas: int,
+                         margem_erro: float = 0.10) -> dict:
         meta = cls.obter_meta_semanal(semana_atual)
-        esperado = meta["racao_kg"]
+        consumo_base = meta["racao_kg"]
 
-        limite_inferior = esperado * (1 - margem_erro)
-        limite_superior = esperado * (1 + margem_erro)
+        # Multiplica a meta base pela proporção do rebanho (ex: base a cada 1000 aves)
+        esperado_lote_inteiro = consumo_base * (aves_vivas / 1000)
+
+        limite_inferior = esperado_lote_inteiro * (1 - margem_erro)
+        limite_superior = esperado_lote_inteiro * (1 + margem_erro)
 
         status = "Adequado"
         alerta = None
 
         if consumo_real_kg < limite_inferior:
             status = "Abaixo do Esperado"
-            alerta = (f"Atenção: Consumo de {consumo_real_kg}kg está abaixo do limite de segurança "
-                      f"de {limite_inferior:.1f}kg. Risco de perda de peso.")
+            alerta = f"Atenção: Consumo de {consumo_real_kg}kg está abaixo do limite de {limite_inferior:.1f}kg para as {aves_vivas} aves."
         elif consumo_real_kg > limite_superior:
             status = "Acima do Esperado"
-            alerta = (f"Atenção: Consumo de {consumo_real_kg}kg excede o limite "
-                      f"de {limite_superior:.1f}kg. Desperdício de ração ou erro de medição.")
+            alerta = f"Atenção: Consumo excede o limite de {limite_superior:.1f}kg."
 
         return {
             "semana": semana_atual,
             "fase_atual": meta["fase"],
-            "meta_kg": esperado,
+            "meta_esperada_lote_kg": esperado_lote_inteiro,
             "consumo_real_kg": consumo_real_kg,
             "status": status,
-            "mensagem_alerta": alerta,
-            "observacao_manejo": meta["observacao"]
+            "mensagem_alerta": alerta
         }
