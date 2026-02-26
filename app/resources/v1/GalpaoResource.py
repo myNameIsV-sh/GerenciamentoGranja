@@ -27,7 +27,18 @@ class GalpaoResource(Resource):
             return {"message": "Erro interno no servidor."}, 500
 
     def post(self):
-        pass
+        """CREATE: Registra um novo galpão construído."""
+        data = request.get_json()
+        errors = self.galpao_schema.validate(data)
+        if errors:
+            return {"erros": errors}, 400
+
+        try:
+            novo_galpao = self.galpao_service.criar_galpao(data)
+            return self.galpao_schema.dump(novo_galpao), 201
+        except Exception as e:
+            return {"message": str(e)}, 400
+
     def put(self):
         pass
     def delete(self):
