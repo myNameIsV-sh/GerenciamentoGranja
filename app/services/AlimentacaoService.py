@@ -33,3 +33,37 @@ class AlimentacaoService:
         # Garante que a semana não seja menor que 1 e trava no máximo de 18 (o platô)
         semana_ajustada = min(max(1, semana_atual), 18)
         return cls.CURVA_ALIMENTACAO[semana_ajustada]
+
+    @classmethod
+    def analisar_consumo(cls, semana_atual: int, consumo_real_kg: float, margem_erro: float = 0.10) -> dict:
+        """
+        Compara o consumo real do lote com a tabela esperada.
+        margem_erro: 10% por padrão. Aceita oscilações normais sem gerar alarme falso.
+        """
+        meta = cls.obter_meta_semanal(semana_atual)
+        esperado = meta["racao_kg"]
+
+        limite_inferior = esperado * (1 - margem_erro)
+        limite_superior = esperado * (1 + margem_erro)
+
+        status = "Adequado"
+        alerta = None
+
+        if consumo_real_kg < limite_inferior:
+            status = "Abaixo do Esperado"
+            alerta = (f"Atenção: Consumo de {consumo_real_kg}kg está abaixo do limite de segurança "
+                      f"de {limite_inferior:.1f}kg. Risco de perda de peso.")
+        elif consumo_real_kg > limite_superior:
+            status = "Acima do Esperado"
+            alerta = (f"Atenção: Consumo de {consumo_real_kg}kg excede o limite "
+                      f"de {limite_superior:.1f}kg. Desperdício de ração ou erro de medição.")
+
+        return {
+            "semana": semana_atual,
+            "fase_atual": meta["fase"],
+            "meta_kg": esperado,
+            "consumo_real_kg": consumo_real_kg,
+            "status": status,
+            "mensagem_alerta": alerta,
+            "observacao_manejo": meta["observacao"]
+        }
