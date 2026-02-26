@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-
+from app.database import db
 from app.models.Lote import Lote
 
 class LoteRepository:
