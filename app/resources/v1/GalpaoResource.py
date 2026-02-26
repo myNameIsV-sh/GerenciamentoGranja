@@ -39,7 +39,34 @@ class GalpaoResource(Resource):
         except Exception as e:
             return {"message": str(e)}, 400
 
-    def put(self):
-        pass
+    def put(self, id_galpao):
+        """UPDATE: Atualiza status ('Ocupado'/'Livre') ou temperatura."""
+        if not id_galpao:
+            return {"message": "ID do galpão é obrigatório."}, 400
+
+        data = request.get_json()
+
+        try:
+            # Se for uma requisição específica de sensor de temperatura
+            if 'temperatura_atual' in data:
+                resultado = self.galpao_service.registrar_temperatura_atual(
+                    id_galpao, data['temperatura_atual']
+                )
+                return resultado, 200
+
+            # Se for uma requisição de status de ocupação
+            if 'status' in data:
+                galpao = self.galpao_service.atualizar_status_ocupacao(id_galpao, data['status'])
+                return self.galpao_schema.dump(galpao), 200
+
+            # Atualização genérica de outros campos
+            galpao_atualizado = self.galpao_service.atualizar_galpao(id_galpao, data)
+            return self.galpao_schema.dump(galpao_atualizado), 200
+
+        except ValueError as e:
+            return {"message": str(e)}, 400  # Bad Request para validações de negócio
+        except Exception as e:
+            return {"message": "Erro interno ao atualizar galpão."}, 500
+
     def delete(self):
         pass
