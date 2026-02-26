@@ -1,20 +1,16 @@
 import os
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
 from flask_restful import Api
 from dotenv import load_dotenv
 from sqlalchemy import text
+from app.database import db, ma
 from app.services.logging_service import setup_logger
 
 logger = setup_logger()
 
 load_dotenv()
 
-db = SQLAlchemy()
-ma = Marshmallow()
 api = Api()
-
 
 def test_db_connection():
     try:
@@ -44,6 +40,8 @@ def create_app():
     db.init_app(app)
     ma.init_app(app)
     api.init_app(app)
+
+    from app.models import Galpao, Lote
 
     with app.app_context():
         test_db_connection() 
