@@ -49,3 +49,35 @@ class GalpaoService:
 
         self.galpao_repository.save(galpao)
         return galpao
+
+    def listar_todos(self):
+        """Busca todos os galpões."""
+        return self.galpao_repository.listar_todos()
+
+    def criar_galpao(self, dados: dict):
+        """Instancia e salva um novo galpão."""
+        from app.models.Galpao import Galpao
+        novo_galpao = Galpao(**dados)
+        return self.galpao_repository.save(novo_galpao)
+
+    def atualizar_galpao(self, id_galpao: int, dados: dict):
+        """Atualiza dinamicamente os dados do galpão (nome, etc)."""
+        galpao = self.obter_galpao_por_id(id_galpao)
+
+        for key, value in dados.items():
+            if hasattr(galpao, key) and key != 'id_galpao':
+                setattr(galpao, key, value)
+
+        return self.galpao_repository.save(galpao)
+
+    def deletar_galpao(self, id_galpao: int):
+        """Deleta o galpão, com verificação de segurança."""
+        galpao = self.obter_galpao_por_id(id_galpao)
+        if not galpao:
+            return False
+
+        # Segurança: Não deixa apagar galpão que ainda tem lotes dentro
+        if galpao.lotes:
+            raise ValueError("Não é possível deletar um galpão que possui lotes vinculados.")
+
+        return self.galpao_repository.delete(galpao)
