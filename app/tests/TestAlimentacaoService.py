@@ -25,3 +25,10 @@ class TestAlimentacaoService:
         resultado = AlimentacaoService.analisar_consumo(1, 5.0, 1000)
         assert resultado["status"] == "Abaixo do Esperado"
         assert "Atenção: Consumo de 5.0kg está abaixo do limite" in resultado["mensagem_alerta"]
+        
+        
+    def test_consumo_acima(self):
+        # Semana 1 (1000 aves): Limite superior é 6.5 * 1.1 = 7.15kg
+        resultado = AlimentacaoService.analisar_consumo(1, 8.0, 1000)
+        assert resultado["status"] == "Acima do Esperado"
+        assert "excede o limite" in resultado["mensagem_alerta"]
