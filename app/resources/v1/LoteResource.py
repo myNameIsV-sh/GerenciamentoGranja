@@ -82,5 +82,15 @@ class LoteResource(Resource):
         except Exception as e:
             return {"message": str(e)}, 400
 
-    def delete(self):
-        pass
+    def delete(self, id_lote):
+        """DELETE: Remove o lote do sistema."""
+        if not id_lote:
+            return {"message": "ID do lote é obrigatório para exclusão."}, 400
+
+        try:
+            sucesso = self.lote_service.deletar_lote(id_lote)
+            if sucesso:
+                return {"message": "Lote deletado com sucesso."}, 204  # 204 = No Content (Padrão REST)
+            return {"message": "Lote não encontrado."}, 404
+        except Exception as e:
+            return {"message": str(e)}, 500
