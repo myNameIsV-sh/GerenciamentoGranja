@@ -16,6 +16,8 @@ class Lote(Base):
     data_alojamento: Mapped[date] = mapped_column(Date, nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="Ativo")
 
+    quantidade_inicial_aves: Mapped[int] = mapped_column(Integer, nullable=False)
+
     # Métricas
     ultimo_peso_g: Mapped[float] = mapped_column(Float, default=0.0)
     consumo_total_racao_kg: Mapped[float] = mapped_column(Float, default=0.0)
