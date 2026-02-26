@@ -68,5 +68,18 @@ class GalpaoResource(Resource):
         except Exception as e:
             return {"message": "Erro interno ao atualizar galpão."}, 500
 
-    def delete(self):
-        pass
+    def delete(self, id_galpao):
+        """DELETE: Remove o galpão do banco de dados."""
+        if not id_galpao:
+            return {"message": "ID do galpão é obrigatório."}, 400
+
+        try:
+            sucesso = self.galpao_service.deletar_galpao(id_galpao)
+            if sucesso:
+                return {"message": "Galpão deletado com sucesso."}, 204
+            return {"message": "Galpão não encontrado."}, 404
+        # É importante capturar erros de banco de dados aqui (ex: Galpão ainda tem Lotes)
+        except Exception as e:
+            logger.error(f"Tentativa de deletar galpão falhou: {str(e)}")
+            return {
+                "message": "Não foi possível deletar o galpão. Verifique se existem lotes ativos vinculados a ele."}, 409  # 409 Conflict
