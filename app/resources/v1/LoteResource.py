@@ -47,7 +47,40 @@ class LoteResource(Resource):
             logger.error(f"Erro ao criar lote: {str(e)}")
             return {"message": str(e)}, 400
 
-    def put(self):
-        pass
+    def put(self, id_lote):
+        """UPDATE: Atualiza dados do lote OU registra o consumo semanal."""
+        if not id_lote:
+            return {"message": "ID do lote é obrigatório para atualização."}, 400
+
+        data = request.get_json()
+
+        # Verifica se é a requisição especial de consumo de ração
+        if 'racao_consumida_kg' in data:
+            consumo_schema = RegistroConsumoSchema()
+            errors = consumo_schema.validate(data)
+            if errors:
+                return {"erros": errors}, 400
+
+            try:
+                # Chama a inteligência de negócio que criamos!
+                resultado = self.lote_service.registrar_consumo_semanal(
+                    id_lote=id_lote,
+                    racao_consumida_kg=data['racao_consumida_kg']
+                )
+                return resultado, 200
+            except ValueError as e:
+                return {"message": str(e)}, 404
+            except Exception as e:
+                return {"message": "Erro ao registrar consumo."}, 500
+
+        # Caso seja uma atualização comum (ex: atualizar o status)
+        try:
+            lote_atualizado = self.lote_service.atualizar_lote(id_lote, data)
+            if not lote_atualizado:
+                return {"message": "Lote não encontrado."}, 404
+            return self.lote_schema.dump(lote_atualizado), 200
+        except Exception as e:
+            return {"message": str(e)}, 400
+
     def delete(self):
         pass
