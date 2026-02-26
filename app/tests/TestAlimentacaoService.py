@@ -32,3 +32,10 @@ class TestAlimentacaoService:
         resultado = AlimentacaoService.analisar_consumo(1, 8.0, 1000)
         assert resultado["status"] == "Acima do Esperado"
         assert "excede o limite" in resultado["mensagem_alerta"]
+        
+        
+    def test_proporcao_lote(self):
+        # Semana 1: meta base 6.5kg. Para 5000 aves, esperado é 6.5 * 5 = 32.5kg
+        resultado = AlimentacaoService.analisar_consumo(1, 32.5, 5000)
+        assert resultado["meta_esperada_lote_kg"] == 32.5
+        assert resultado["status"] == "Adequado"
