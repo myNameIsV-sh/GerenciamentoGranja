@@ -37,3 +37,15 @@ class GalpaoService:
             return {"status": "Alerta", "mensagem": "Temperatura crítica! Ligar exaustores."}
 
         return {"status": "Normal", "mensagem": "Temperatura dentro do padrão."}
+
+    def atualizar_configuracao_luz(self, id_galpao: int, config_luz: dict):
+        """
+        Recebe a configuração do FotoPeriodoService e atualiza o galpão.
+        """
+        galpao = self.obter_galpao_por_id(id_galpao)
+
+        galpao.horario_religamento_luzes = config_luz.get("horario_religamento_luzes")
+        galpao.horario_desligamento_luzes = config_luz.get("horario_desligamento_luzes")
+
+        self.galpao_repository.save(galpao)
+        return galpao
