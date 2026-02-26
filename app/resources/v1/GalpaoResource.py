@@ -11,8 +11,21 @@ class GalpaoResource(Resource):
         self.galpao_schema = GalpaoSchema()
         self.galpoes_schema = GalpaoSchema(many=True)
 
-    def get(self):
-        pass
+    def get(self, id_galpao=None):
+        """READ: Busca um galpão ou a lista completa de infraestrutura."""
+        try:
+            if id_galpao:
+                galpao = self.galpao_service.obter_galpao_por_id(id_galpao)
+                if not galpao:
+                    return {"message": "Galpão não encontrado."}, 404
+                return self.galpao_schema.dump(galpao), 200
+
+            galpoes = self.galpao_service.listar_todos()
+            return self.galpoes_schema.dump(galpoes), 200
+        except Exception as e:
+            logger.error(f"Erro ao buscar galpão: {str(e)}")
+            return {"message": "Erro interno no servidor."}, 500
+
     def post(self):
         pass
     def put(self):
