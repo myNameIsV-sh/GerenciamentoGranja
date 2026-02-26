@@ -32,3 +32,37 @@ class LoteService:
             "analise_alimentacao": analise_alimentacao,
             "configuracao_luz_aplicada": config_luz
         }
+
+    def obter_lote(self, id_lote: int):
+        """Busca um lote específico no banco."""
+        return self.lote_repository.get_lote(id_lote)
+
+    def listar_todos(self):
+        """Lista todos os lotes cadastrados."""
+        return self.lote_repository.listar_todos()
+
+    def criar_lote(self, dados: dict):
+        """Cria uma nova instância de Lote e salva no banco."""
+        from app.models.Lote import Lote
+        novo_lote = Lote(**dados)
+        return self.lote_repository.save(novo_lote)
+
+    def atualizar_lote(self, id_lote: int, dados: dict):
+        """Atualiza dinamicamente os campos permitidos de um lote."""
+        lote = self.obter_lote(id_lote)
+        if not lote:
+            return None
+
+        # Atualiza os atributos do objeto iterando sobre o dicionário
+        for key, value in dados.items():
+            if hasattr(lote, key) and key != 'id_lote':  # Evita mudar a Primary Key
+                setattr(lote, key, value)
+
+        return self.lote_repository.save(lote)
+
+    def deletar_lote(self, id_lote: int):
+        """Remove o lote do banco de dados."""
+        lote = self.obter_lote(id_lote)
+        if not lote:
+            return False
+        return self.lote_repository.delete(lote)
