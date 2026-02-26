@@ -1,6 +1,6 @@
 from flask import request
 from flask_restful import Resource
-from app.schemas.LoteSchema import LoteSchema
+from app.schemas.LoteSchema import LoteSchema, RegistroConsumoSchema
 from app.services.logging_service import setup_logger
 
 logger = setup_logger("LoteResource")
@@ -30,9 +30,9 @@ class LoteResource(Resource):
 
     def post(self):
         """CREATE: Aloja um novo lote na granja."""
-        data = request.get_json()
+        # Usa 'or {}' para evitar erro se o cliente esquecer o Content-Type: application/json
+        data = request.get_json() or {}
 
-        # 1. Validação de Segurança
         errors = self.lote_schema.validate(data)
         if errors:
             logger.warning(f"Tentativa de criar lote com dados inválidos: {errors}")
@@ -47,12 +47,12 @@ class LoteResource(Resource):
             logger.error(f"Erro ao criar lote: {str(e)}")
             return {"message": str(e)}, 400
 
-    def put(self, id_lote):
+    def put(self, id_lote=None):
         """UPDATE: Atualiza dados do lote OU registra o consumo semanal."""
         if not id_lote:
-            return {"message": "ID do lote é obrigatório para atualização."}, 400
+            return {"message": "Rota inválida. O ID do lote é obrigatório no URL para atualização."}, 400
 
-        data = request.get_json()
+        data = request.get_json() or {}
 
         # Verifica se é a requisição especial de consumo de ração
         if 'racao_consumida_kg' in data:
@@ -82,10 +82,10 @@ class LoteResource(Resource):
         except Exception as e:
             return {"message": str(e)}, 400
 
-    def delete(self, id_lote):
+    def delete(self, id_lote=None):
         """DELETE: Remove o lote do sistema."""
         if not id_lote:
-            return {"message": "ID do lote é obrigatório para exclusão."}, 400
+            return {"message": "Rota inválida. O ID do lote é obrigatório no URL para exclusão."}, 400
 
         try:
             sucesso = self.lote_service.deletar_lote(id_lote)

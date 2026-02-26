@@ -28,7 +28,7 @@ class GalpaoResource(Resource):
 
     def post(self):
         """CREATE: Registra um novo galpão construído."""
-        data = request.get_json()
+        data = request.get_json() or {}
         errors = self.galpao_schema.validate(data)
         if errors:
             return {"erros": errors}, 400
@@ -39,12 +39,12 @@ class GalpaoResource(Resource):
         except Exception as e:
             return {"message": str(e)}, 400
 
-    def put(self, id_galpao):
+    def put(self, id_galpao=None):
         """UPDATE: Atualiza status ('Ocupado'/'Livre') ou temperatura."""
         if not id_galpao:
-            return {"message": "ID do galpão é obrigatório."}, 400
+            return {"message": "Rota inválida. O ID do galpão é obrigatório no URL."}, 400
 
-        data = request.get_json()
+        data = request.get_json() or {}
 
         try:
             # Se for uma requisição específica de sensor de temperatura
