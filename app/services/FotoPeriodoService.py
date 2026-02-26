@@ -53,3 +53,13 @@ class FotoPeriodoService:
             "horario_desligamento_luzes": hora_desligar_str,
             "orientacao_manejo": cls._obter_observacao(semana_ajustada)
         }
+
+    @classmethod
+    def _obter_observacao(cls, semana: int) -> str:
+        if semana <= 2:
+            return "As luzes permanecem acesas durante todo o dia, sendo apagadas apenas no período noturno."
+        elif 3 <= semana <= 7:
+            return "Em dias com baixa iluminação natural (nublados/chuvosos), as luzes devem ser ligadas também durante o dia."
+        elif semana == 16:
+            return "Atenção: Fator de Ajuste (Manejo crítico de fase)."
+        return "Programa de luz padrão."
