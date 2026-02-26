@@ -1,0 +1,2 @@
+class GalpaoService:
+    pass
