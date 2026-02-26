@@ -29,7 +29,24 @@ class LoteResource(Resource):
             return {"message": "Erro interno no servidor."}, 500
 
     def post(self):
-        pass
+        """CREATE: Aloja um novo lote na granja."""
+        data = request.get_json()
+
+        # 1. Validação de Segurança
+        errors = self.lote_schema.validate(data)
+        if errors:
+            logger.warning(f"Tentativa de criar lote com dados inválidos: {errors}")
+            return {"erros": errors}, 400
+
+        # 2. Execução
+        try:
+            novo_lote = self.lote_service.criar_lote(data)
+            logger.info(f"Novo lote alojado com sucesso: ID {novo_lote.id_lote}")
+            return self.lote_schema.dump(novo_lote), 201
+        except Exception as e:
+            logger.error(f"Erro ao criar lote: {str(e)}")
+            return {"message": str(e)}, 400
+
     def put(self):
         pass
     def delete(self):
