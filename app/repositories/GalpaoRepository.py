@@ -32,3 +32,16 @@ class GalpaoRepository:
         except SQLAlchemyError as e:
             logger.error(f"Erro ao listar galpões: {str(e)}")
             return []
+
+    def delete(self, galpao: Galpao):
+        """Remove o galpão e loga a exclusão."""
+        try:
+            id_removido = galpao.id_galpao
+            db.session.delete(galpao)
+            db.session.commit()
+            logger.info(f"Galpão {id_removido} removido do sistema.")
+            return True
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error(f"Erro ao deletar galpão: {str(e)}")
+            return False
