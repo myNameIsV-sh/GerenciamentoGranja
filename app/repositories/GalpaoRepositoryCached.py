@@ -1,4 +1,5 @@
 import json
+import redis
 from datetime import timedelta
 
 from app.utils.redis_client import get_redis_client
@@ -17,33 +18,45 @@ class GalpaoRepositoryCached:
     def get_by_id(self, id_galpao: int):
         cache_key = f"galpao:{id_galpao}"
         
-        cached_data = self._redis.get(cache_key)
-        if cached_data:
-            logger.debug(f"Cache Hit para Galpão {id_galpao}")
-            return json.loads(cached_data)
+        try:
+            cached_data = self._redis.get(cache_key)
+            if cached_data:
+                logger.debug(f"Cache Hit para Galpão {id_galpao}")
+                return json.loads(cached_data)
+        except redis.RedisError as e:
+            logger.warning(f"Erro ao acessar Redis (get): {e}. Fallback para BD.")
         
         logger.debug(f"Cache Miss para Galpão {id_galpao}. Buscando no BD.")
         galpao = self._repo.get_by_id(id_galpao)
         
         if galpao:
-            data = galpao_schema.dump(galpao)
-            self._redis.setex(cache_key, self._cache_ttl, json.dumps(data))
+            try:
+                data = galpao_schema.dump(galpao)
+                self._redis.setex(cache_key, self._cache_ttl, json.dumps(data))
+            except redis.RedisError as e:
+                logger.warning(f"Erro ao acessar Redis (setex): {e}.")
             
         return galpao
 
     def listar_todos(self):
         cache_key = "galpoes:all"
         
-        cached_data = self._redis.get(cache_key)
-        if cached_data:
-            logger.debug("Cache Hit para Listar Galpões")
-            return json.loads(cached_data)
+        try:
+            cached_data = self._redis.get(cache_key)
+            if cached_data:
+                logger.debug("Cache Hit para Listar Galpões")
+                return json.loads(cached_data)
+        except redis.RedisError as e:
+            logger.warning(f"Erro ao acessar Redis (get): {e}. Fallback para BD.")
         
         logger.debug("Cache Miss para Listar Galpões. Buscando no BD.")
         galpoes = self._repo.listar_todos()
         
-        data = galpao_schema.dump(galpoes, many=True)
-        self._redis.setex(cache_key, self._cache_ttl, json.dumps(data))
+        try:
+            data = galpao_schema.dump(galpoes, many=True)
+            self._redis.setex(cache_key, self._cache_ttl, json.dumps(data))
+        except redis.RedisError as e:
+            logger.warning(f"Erro ao acessar Redis (setex): {e}.")
             
         return galpoes
 
@@ -60,6 +73,9 @@ class GalpaoRepositoryCached:
         return result
 
     def _invalidate_cache(self, id_galpao):
-        self._redis.delete(f"galpao:{id_galpao}")
-        self._redis.delete("galpoes:all")
-        logger.debug(f"Cache invalidado para Galpão {id_galpao}")
+        try:
+            self._redis.delete(f"galpao:{id_galpao}")
+            self._redis.delete("galpoes:all")
+            logger.debug(f"Cache invalidado para Galpão {id_galpao}")
+        except redis.RedisError as e:
+            logger.warning(f"Erro ao acessar Redis (delete): {e}.")
