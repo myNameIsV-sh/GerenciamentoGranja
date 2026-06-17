@@ -1,4 +1,5 @@
 import json
+import redis
 from datetime import timedelta
 
 from app.utils.redis_client import get_redis_client
@@ -18,36 +19,48 @@ class LoteRepositoryCached:
         cache_key = f"lote:{id_lote}"
 
         # Cache Hit
-        cached_data = self._redis.get(cache_key)
-        if cached_data:
-            logger.debug(f"Cache Hit para Lote {id_lote}")
-            return json.loads(cached_data)
+        try:
+            cached_data = self._redis.get(cache_key)
+            if cached_data:
+                logger.debug(f"Cache Hit para Lote {id_lote}")
+                return json.loads(cached_data)
+        except redis.RedisError as e:
+            logger.warning(f"Erro ao acessar Redis (get): {e}. Fallback para BD.")
         
         # Cache Miss
         logger.debug(f"Cache Miss para Lote {id_lote}. Buscando no BD.")
         lote = self._repo.get_lote(id_lote)
         
         if lote:
-            # Serializa e salva no cache
-            data = lote_schema.dump(lote)
-            self._redis.setex(cache_key, self._cache_ttl, json.dumps(data))
+            # Serializa e tenta salvar no cache
+            try:
+                data = lote_schema.dump(lote)
+                self._redis.setex(cache_key, self._cache_ttl, json.dumps(data))
+            except redis.RedisError as e:
+                logger.warning(f"Erro ao acessar Redis (setex): {e}.")
             
         return lote
 
     def listar_todos(self):
         cache_key = "lotes:all"
         
-        cached_data = self._redis.get(cache_key)
-        if cached_data:
-            logger.debug("Cache Hit para Listar Lotes")
-            return json.loads(cached_data)
+        try:
+            cached_data = self._redis.get(cache_key)
+            if cached_data:
+                logger.debug("Cache Hit para Listar Lotes")
+                return json.loads(cached_data)
+        except redis.RedisError as e:
+            logger.warning(f"Erro ao acessar Redis (get): {e}. Fallback para BD.")
         
         logger.debug("Cache Miss para Listar Lotes. Buscando no BD.")
         lotes = self._repo.listar_todos()
         
-        # Serializa lista de lotes
-        data = lote_schema.dump(lotes, many=True)
-        self._redis.setex(cache_key, self._cache_ttl, json.dumps(data))
+        # Serializa e tenta salvar no cache
+        try:
+            data = lote_schema.dump(lotes, many=True)
+            self._redis.setex(cache_key, self._cache_ttl, json.dumps(data))
+        except redis.RedisError as e:
+            logger.warning(f"Erro ao acessar Redis (setex): {e}.")
             
         return lotes
 
@@ -72,6 +85,9 @@ class LoteRepositoryCached:
         return result
 
     def _invalidate_cache(self, id_lote):
-        self._redis.delete(f"lote:{id_lote}")
-        self._redis.delete("lotes:all")
-        logger.debug(f"Cache invalidado para Lote {id_lote}")
+        try:
+            self._redis.delete(f"lote:{id_lote}")
+            self._redis.delete("lotes:all")
+            logger.debug(f"Cache invalidado para Lote {id_lote}")
+        except redis.RedisError as e:
+            logger.warning(f"Erro ao acessar Redis (delete): {e}.")
