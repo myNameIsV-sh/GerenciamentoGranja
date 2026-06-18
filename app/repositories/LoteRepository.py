@@ -30,18 +30,24 @@ class LoteRepository:
     def save(self, lote: Lote):
         """Salva o lote e registra o sucesso ou falha crítica."""
         try:
-            db.session.add(lote)
+            # Usar merge em vez de add para garantir que instâncias vindas 
+            # de fora da sessão (cache) sejam atualizadas corretamente
+            lote_persisted = db.session.merge(lote)
             db.session.commit()
-            logger.info(f"Lote {lote.id_lote} atualizado com sucesso (Consumo Acumulado: {lote.consumo_total_racao_kg}kg).")
-            return lote
+            logger.info(f"Lote {lote_persisted.id_lote} atualizado com sucesso (Consumo Acumulado: {lote_persisted.consumo_total_racao_kg}kg).")
+            return lote_persisted
         except SQLAlchemyError as e:
             db.session.rollback()
-            logger.critical(f"Falha ao salvar lote {lote.id_lote}: {str(e)}")
+            logger.critical(f"Falha ao salvar lote: {str(e)}")
             raise e
 
     def delete(self, lote: Lote):
         """Remove o lote e loga a exclusão."""
         try:
+            # Garante que o objeto está na sessão atual do banco de dados
+            if lote not in db.session:
+                lote = db.session.merge(lote)
+
             id_removido = lote.id_lote
             db.session.delete(lote)
             db.session.commit()
