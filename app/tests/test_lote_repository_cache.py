@@ -3,6 +3,8 @@ import pytest
 
 from unittest.mock import MagicMock
 from app.repositories.LoteRepositoryCached import LoteRepositoryCached
+from app.models.Lote import Lote
+from app.models.Galpao import Galpao
 
 class TestLoteRepositoryCached:
     @pytest.fixture
@@ -18,12 +20,22 @@ class TestLoteRepositoryCached:
 
     def test_get_lote_cache_hit(self, cached_repo, mock_repo):
         lote_id = 1
-        cached_data = {"id_lote": 1, "status": "Ativo"}
+        cached_data = {
+            "id_lote": 1,
+            "id_galpao": 1,
+            "data_alojamento": "2026-06-18",
+            "status": "Ativo",
+            "quantidade_inicial_aves": 1000,
+            "ultimo_peso_g": 0.0,
+            "consumo_total_racao_kg": 0.0,
+            "mortalidade_acumulada": 0
+        }
         cached_repo._redis.get.return_value = json.dumps(cached_data)
 
         result = cached_repo.get_lote(lote_id)
 
-        assert result == cached_data
+        assert result.id_lote == cached_data["id_lote"]
+        assert result.status == cached_data["status"]
         mock_repo.get_lote.assert_not_called()
         cached_repo._redis.get.assert_called_with(f"lote:{lote_id}")
 
