@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import MagicMock
 from app.repositories.GalpaoRepositoryCached import GalpaoRepositoryCached
+from app.models.Lote import Lote
 import json
 
 class TestGalpaoRepositoryCached:
@@ -22,7 +23,8 @@ class TestGalpaoRepositoryCached:
 
         result = cached_repo.get_by_id(galpao_id)
 
-        assert result == cached_data
+        assert result.id_galpao == cached_data["id_galpao"]
+        assert result.identificacao == cached_data["identificacao"]
         mock_repo.get_by_id.assert_not_called()
         cached_repo._redis.get.assert_called_with(f"galpao:{galpao_id}")
 
