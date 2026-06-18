@@ -22,7 +22,7 @@ class GalpaoRepositoryCached:
             cached_data = self._redis.get(cache_key)
             if cached_data:
                 logger.debug(f"Cache Hit para Galpão {id_galpao}")
-                return json.loads(cached_data)
+                return galpao_schema.load(json.loads(cached_data))
         except redis.RedisError as e:
             logger.warning(f"Erro ao acessar Redis (get): {e}. Fallback para BD.")
         
@@ -45,7 +45,7 @@ class GalpaoRepositoryCached:
             cached_data = self._redis.get(cache_key)
             if cached_data:
                 logger.debug("Cache Hit para Listar Galpões")
-                return json.loads(cached_data)
+                return galpao_schema.load(json.loads(cached_data), many=True)
         except redis.RedisError as e:
             logger.warning(f"Erro ao acessar Redis (get): {e}. Fallback para BD.")
         
