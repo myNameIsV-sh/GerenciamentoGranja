@@ -3,11 +3,11 @@ import redis
 from datetime import timedelta
 
 from app.utils.redis_client import get_redis_client
-from app.schemas.LoteSchema import LoteSchema
+from app.schemas.LoteSchema import LoteBaseSchema
 from app.services.logging_service import setup_logger
 
 logger = setup_logger("LoteRepositoryCached")
-lote_schema = LoteSchema()
+lote_schema = LoteBaseSchema()
 
 class LoteRepositoryCached:
     def __init__(self, repo):
