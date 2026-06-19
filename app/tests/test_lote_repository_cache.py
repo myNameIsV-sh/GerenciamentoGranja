@@ -5,6 +5,8 @@ from unittest.mock import MagicMock
 from app.repositories.LoteRepositoryCached import LoteRepositoryCached
 from app.models.Lote import Lote
 from app.models.Galpao import Galpao
+from app.schemas.LoteSchema import LoteBaseSchema
+import json
 
 class TestLoteRepositoryCached:
     @pytest.fixture
