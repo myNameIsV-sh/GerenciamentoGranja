@@ -1,8 +1,10 @@
 import os
+
 from flask import Flask
 from flask_restful import Api
 from dotenv import load_dotenv
 from sqlalchemy import text
+
 from app.database import db, ma
 from app.services.logging_service import setup_logger
 
@@ -45,9 +47,8 @@ def create_app():
 
     with app.app_context():
         test_db_connection() 
+        db.create_all()
 
     logger.info("Aplicação Flask iniciada com Flask-RESTful")
-
-    
 
     return app

@@ -15,13 +15,15 @@ class GalpaoRepository:
 
     def save(self, galpao: Galpao):
         try:
-            db.session.add(galpao)
+            # Usar merge em vez de add para garantir que instâncias vindas 
+            # de fora da sessão (cache) sejam atualizadas corretamente
+            galpao_persisted = db.session.merge(galpao)
             db.session.commit()
-            logger.info(f"Galpão {galpao.id_galpao} ({galpao.identificacao}) atualizado com sucesso.")
-            return galpao
+            logger.info(f"Galpão {galpao_persisted.id_galpao} ({galpao_persisted.identificacao}) atualizado com sucesso.")
+            return galpao_persisted
         except SQLAlchemyError as e:
             db.session.rollback()
-            logger.critical(f"Erro fatal ao salvar galpão {galpao.id_galpao}: {str(e)}")
+            logger.critical(f"Erro fatal ao salvar galpão: {str(e)}")
             raise e
 
     def listar_todos(self):
@@ -36,6 +38,10 @@ class GalpaoRepository:
     def delete(self, galpao: Galpao):
         """Remove o galpão e loga a exclusão."""
         try:
+            # Garante que o objeto está na sessão atual do banco de dados
+            if galpao not in db.session:
+                galpao = db.session.merge(galpao)
+            
             id_removido = galpao.id_galpao
             db.session.delete(galpao)
             db.session.commit()
